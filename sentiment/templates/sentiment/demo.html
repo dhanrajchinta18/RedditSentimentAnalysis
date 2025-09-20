@@ -1,0 +1,39 @@
+<!-- sentiment/templates/sentiment/demo.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spark Demo - Processing Comparison</title>
+</head>
+<body>
+    <h1>Spark Demo: Processing Comparison</h1>
+
+    <!-- Buttons to trigger processing -->
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="spark">Process with Spark</button>
+        <button type="submit" name="no_spark">Process without Spark</button>
+    </form>
+
+    {% if method %}
+      <h2>Results using {{ method|title }}:</h2>
+      <p>Processing time: {{ elapsed_time }} seconds</p>
+      <table border="1" cellspacing="0" cellpadding="5">
+          <thead>
+              <tr>
+                  <th>Subreddit</th>
+                  <th>Count</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for row in processed_data %}
+              <tr>
+                  <td>{{ row.Subreddit }}</td>
+                  <td>{{ row.count }}</td>
+              </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+    {% endif %}
+</body>
+</html>

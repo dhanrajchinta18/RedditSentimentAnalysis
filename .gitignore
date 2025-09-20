@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django stuff:
+db.sqlite3
+*.log
+
+# Environment
+venv/
+.env
+.env.*
+
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# CSV outputs and temp files
+*.csv
+!data.csv
+!reddit_data.csv
+!cleaned.csv
+
+# Jupyter
+.ipynb_checkpoints/

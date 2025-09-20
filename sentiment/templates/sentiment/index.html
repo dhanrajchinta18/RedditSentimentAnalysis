@@ -1,0 +1,442 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <title>Reddit Sentiment Analysis</title>-->
+<!--  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">-->
+<!--  <style>-->
+<!--    /* Global Styles */-->
+<!--    * {-->
+<!--      box-sizing: border-box;-->
+<!--      margin: 0;-->
+<!--      padding: 0;-->
+<!--    }-->
+<!--    body {-->
+<!--      font-family: 'Roboto', sans-serif;-->
+<!--      background-color: #1e1e2f;-->
+<!--      color: #e0e0e0;-->
+<!--    }-->
+<!--    .container {-->
+<!--      max-width: 1000px;-->
+<!--      margin: 40px auto;-->
+<!--      padding: 20px;-->
+<!--      box-shadow: 0 0 10px rgba(0,0,0,0.4);-->
+<!--      border-radius: 6px;-->
+<!--      background-color: #252538;-->
+<!--      animation: fadeInContainer 0.5s ease-in;-->
+<!--    }-->
+<!--    @keyframes fadeInContainer {-->
+<!--      0% { opacity: 0; transform: translateY(10px); }-->
+<!--      100% { opacity: 1; transform: translateY(0); }-->
+<!--    }-->
+<!--    h1 {-->
+<!--      text-align: center;-->
+<!--      font-size: 1.8rem;-->
+<!--      margin-bottom: 20px;-->
+<!--      color: #ffffff;-->
+<!--    }-->
+<!--    form {-->
+<!--      display: flex;-->
+<!--      justify-content: center;-->
+<!--      align-items: center;-->
+<!--      gap: 10px;-->
+<!--      margin-bottom: 20px;-->
+<!--      flex-wrap: wrap; /* In case the window is very narrow */-->
+<!--    }-->
+<!--    select, input[type="text"] {-->
+<!--      padding: 8px 10px;-->
+<!--      font-size: 0.9rem;-->
+<!--      border: none;-->
+<!--      border-radius: 5px;-->
+<!--      background-color: #2b2b3d;-->
+<!--      color: #e0e0e0;-->
+<!--      transition: background-color 0.3s ease;-->
+<!--    }-->
+<!--    select:focus, input[type="text"]:focus {-->
+<!--      outline: none;-->
+<!--      background-color: #35354a;-->
+<!--    }-->
+<!--    select {-->
+<!--      width: 140px;-->
+<!--    }-->
+<!--    input[type="text"] {-->
+<!--      width: 280px;-->
+<!--    }-->
+<!--    button {-->
+<!--      padding: 8px 15px;-->
+<!--      font-size: 0.9rem;-->
+<!--      border: none;-->
+<!--      border-radius: 5px;-->
+<!--      background-color: #3a3a5a;-->
+<!--      color: #ffffff;-->
+<!--      cursor: pointer;-->
+<!--      transition: background-color 0.3s ease, transform 0.2s ease;-->
+<!--    }-->
+<!--    button:hover {-->
+<!--      background-color: #4a4a6a;-->
+<!--      transform: translateY(-2px);-->
+<!--    }-->
+<!--    .error-message {-->
+<!--      color: #ff5e5e;-->
+<!--      text-align: center;-->
+<!--      margin-bottom: 15px;-->
+<!--    }-->
+<!--    .search-summary {-->
+<!--      text-align: center;-->
+<!--      margin-bottom: 15px;-->
+<!--      font-style: italic;-->
+<!--      color: #bbb;-->
+<!--    }-->
+<!--    /* Posts Grid */-->
+<!--    ul {-->
+<!--      display: grid;-->
+<!--      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));-->
+<!--      gap: 20px;-->
+<!--      list-style: none;-->
+<!--    }-->
+<!--    li {-->
+<!--      background-color: #2b2b3d;-->
+<!--      border-radius: 5px;-->
+<!--      padding: 15px;-->
+<!--      position: relative;-->
+<!--      /* Fade-in animation */-->
+<!--      opacity: 0;-->
+<!--      animation: fadeInItem 0.4s forwards;-->
+<!--    }-->
+<!--    @keyframes fadeInItem {-->
+<!--      to { opacity: 1; }-->
+<!--    }-->
+<!--    li:hover {-->
+<!--      transform: translateY(-2px);-->
+<!--    }-->
+<!--    li strong {-->
+<!--      font-size: 1rem;-->
+<!--      display: block;-->
+<!--      margin-bottom: 8px;-->
+<!--      color: #ffffff;-->
+<!--    }-->
+<!--    li p {-->
+<!--      margin-bottom: 8px;-->
+<!--      line-height: 1.4;-->
+<!--      font-size: 0.9rem;-->
+<!--    }-->
+<!--    li img, li video {-->
+<!--      max-width: 100%;-->
+<!--      margin-top: 8px;-->
+<!--      border-radius: 5px;-->
+<!--    }-->
+<!--    .sentiment-indicator {-->
+<!--      margin-top: 8px;-->
+<!--      height: 25px;-->
+<!--      line-height: 25px;-->
+<!--      text-align: center;-->
+<!--      border-radius: 0 0 5px 5px;-->
+<!--      font-weight: bold;-->
+<!--      font-size: 0.9rem;-->
+<!--      color: #ffffff;-->
+<!--    }-->
+<!--    .sentiment-indicator.positive {-->
+<!--      background-color: #00c853;-->
+<!--    }-->
+<!--    .sentiment-indicator.negative {-->
+<!--      background-color: #d50000;-->
+<!--    }-->
+<!--    .sentiment-indicator.neutral {-->
+<!--      background-color: #9e9e9e;-->
+<!--    }-->
+<!--  </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--  {% load my_filters %}-->
+<!--  <div class="container">-->
+<!--    <h1>Reddit Sentiment Analysis</h1>-->
+<!--    <form method="post">-->
+<!--      {% csrf_token %}-->
+<!--      <select name="search_mode">-->
+<!--        <option value="subreddit" {% if search_mode == 'subreddit' %}selected{% endif %}>Subreddit</option>-->
+<!--        <option value="keyword" {% if search_mode == 'keyword' %}selected{% endif %}>Keyword</option>-->
+<!--      </select>-->
+<!--      <input type="text" name="query" placeholder="Enter subreddit or keyword">-->
+<!--      <button type="submit">Analyze</button>-->
+<!--    </form>-->
+
+<!--    {% if error %}-->
+<!--      <p class="error-message">{{ error }}</p>-->
+<!--    {% endif %}-->
+
+<!--    {% if query %}-->
+<!--      <p class="search-summary">Showing results for: "<strong>{{ query }}</strong>"</p>-->
+<!--    {% endif %}-->
+<!--    {% if elapsed_time %}-->
+<!--      <p class="search-summary">Time: "<strong>{{ elapsed_time }}</strong>"</p>-->
+<!--    {% endif %}-->
+
+<!--    {% if posts %}-->
+<!--      <ul>-->
+<!--        {% for post in posts %}-->
+<!--          <li>-->
+<!--            <strong>{{ post.title }}</strong>-->
+<!--            <p>{{ post.selftext }}</p>-->
+<!--            {% if post.media_url %}-->
+<!--              {% if post.media_url|lower|endswith:".jpg" or post.media_url|lower|endswith:".png" or post.media_url|lower|endswith:".jpeg" %}-->
+<!--                <img src="{{ post.media_url }}" alt="Post image">-->
+<!--              {% elif post.media_url|lower|endswith:".mp4" %}-->
+<!--                <video controls>-->
+<!--                  <source src="{{ post.media_url }}" type="video/mp4">-->
+<!--                  Your browser does not support the video tag.-->
+<!--                </video>-->
+<!--              {% else %}-->
+<!--                <a href="{{ post.media_url }}" target="_blank">View Media</a>-->
+<!--              {% endif %}-->
+<!--            {% endif %}-->
+<!--            <div class="sentiment-indicator {% if post.sentiment == 'positive' %}-->
+<!--              positive{% elif post.sentiment == 'negative' %}negative{% else %}neutral{% endif %}">-->
+<!--              Sentiment: {{ post.sentiment|upper }}-->
+<!--            </div>-->
+<!--          </li>-->
+<!--        {% endfor %}-->
+<!--      </ul>-->
+<!--    {% endif %}-->
+<!--  </div>-->
+<!--</body>-->
+<!--</html>-->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reddit Sentiment Analysis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    /* Global Styles */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: #1e1e2f; /* Dark, but not black */
+      color: #e0e0e0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      /* Optional subtle shadow around container */
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+      border-radius: 6px;
+      background-color: #252538; /* Slightly different dark background for contrast */
+      animation: fadeInContainer 0.5s ease-in;
+    }
+    @keyframes fadeInContainer {
+      0% {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.2em;
+      margin-bottom: 30px;
+      color: #ffffff;
+    }
+
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 40px;
+      gap: 10px;
+    }
+
+    select, input[type="text"] {
+      padding: 12px 15px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      background-color: #2b2b3d;
+      color: #e0e0e0;
+      transition: background-color 0.3s ease;
+    }
+    select:focus, input[type="text"]:focus {
+      outline: none;
+      background-color: #35354a;
+    }
+    select {
+      width: 150px;
+    }
+    input[type="text"] {
+      width: 300px;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      background-color: #3a3a5a;
+      color: #ffffff;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    button:hover {
+      background-color: #4a4a6a;
+      transform: translateY(-2px);
+    }
+
+    /* Error message styling */
+    .error-message {
+      color: #ff5e5e;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      background-color: #2b2b3d;
+      border-radius: 5px;
+      padding: 20px;
+      margin-bottom: 20px;
+      position: relative;
+      /* Fade-in animation */
+      opacity: 0;
+      animation: fadeInItem 0.5s forwards;
+    }
+    /* Staggering the list item animation slightly for a nicer effect */
+    li:nth-child(even) {
+      animation-delay: 0.1s;
+    }
+    li:nth-child(odd) {
+      animation-delay: 0.2s;
+    }
+
+    @keyframes fadeInItem {
+      to {
+        opacity: 1;
+      }
+    }
+
+    li:hover {
+      transform: translateY(-3px);
+    }
+
+    li strong {
+      font-size: 1.2em;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    li p {
+      margin: 0 0 10px;
+      line-height: 1.5;
+    }
+
+    li small {
+      font-size: 0.9em;
+      opacity: 0.8;
+    }
+
+    /* Media styling */
+    li img, li video {
+      max-width: 100%;
+      margin-top: 10px;
+      border-radius: 5px;
+    }
+
+    /* Sentiment indicator at the bottom */
+    .sentiment-indicator {
+      height: 30px;
+      line-height: 30px;
+      text-align: center;
+      border-radius: 0 0 5px 5px;
+      margin-top: 10px;
+      font-weight: bold;
+      color: #ffffff;
+    }
+    .sentiment-indicator.positive { background-color: #00c853; }
+    .sentiment-indicator.negative { background-color: #d50000; }
+    .sentiment-indicator.neutral { background-color: #9e9e9e; }
+
+    /* Show the user's query at the top (optional styling) */
+    .search-summary {
+      text-align: center;
+      margin-bottom: 20px;
+      font-style: italic;
+      color: #bbb;
+    }
+  </style>
+</head>
+<body>
+{% load my_filters %}
+  <div class="container">
+    <h1>Reddit Sentiment Analysis</h1>
+    <form method="post">
+      {% csrf_token %}
+      <select name="search_mode">
+        <option value="subreddit" {% if search_mode == 'subreddit' %}selected{% endif %}>Subreddit</option>
+        <option value="keyword" {% if search_mode == 'keyword' %}selected{% endif %}>Keyword</option>
+      </select>
+      <input
+        type="text"
+        name="query"
+        placeholder="Enter subreddit or keyword"
+      >
+      <button type="submit">Analyze</button>
+    </form>
+
+    {% if error %}
+      <p class="error-message">{{ error }}</p>
+    {% endif %}
+
+    {% if query %}
+      <p class="search-summary">
+        Showing results for: "<strong>{{ query }}</strong>"
+      </p>
+    {% endif %}
+    {% if elapsed_time %}
+      <p class="search-summary">
+        Time: "<strong>{{ elapsed_time }}</strong>"
+      </p>
+    {% endif %}
+
+    {% if posts %}
+      <ul>
+        {% for post in posts %}
+          <li>
+            <strong>{{ post.title }}</strong>
+            <p>{{ post.selftext }}</p>
+            {% if post.media_url %}
+              {% if post.media_url|lower|endswith:".jpg" or post.media_url|lower|endswith:".png" or post.media_url|lower|endswith:".jpeg" %}
+                <img src="{{ post.media_url }}" alt="Post image">
+              {% elif post.media_url|lower|endswith:".mp4" %}
+                <video controls>
+                  <source src="{{ post.media_url }}" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              {% else %}
+                <a href="{{ post.media_url }}" target="_blank">View Media</a>
+              {% endif %}
+            {% endif %}
+            <div class="sentiment-indicator {% if post.sentiment == 'positive' %}positive{% elif post.sentiment == 'negative' %}negative{% else %}neutral{% endif %}">
+              Sentiment: {{ post.sentiment|upper }}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+</body>
+</html>
